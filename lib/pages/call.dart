@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:agora_rtc_engine/rtc_engine.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 
@@ -29,9 +30,9 @@ class _CallPageState extends State<CallPage> {
   @override
   void initState() {
     super.initState();
-    try{
+    try {
       initializeCalling();
-    }catch(e,s){
+    } catch (e, s) {
       log("****error $e");
       log("****error  $s");
     }
@@ -39,6 +40,7 @@ class _CallPageState extends State<CallPage> {
 
   @override
   void dispose() {
+    _removeDataFromFirebase();
     _engine.leaveChannel();
     _engine.destroy();
     super.dispose();
@@ -56,14 +58,13 @@ class _CallPageState extends State<CallPage> {
       return;
     }
 
-      await _initAgoraRtcEngine();
-      _addAgoraEventHandlers();
-      var configuration = VideoEncoderConfiguration();
-      configuration.dimensions = VideoDimensions(width: 1920, height: 1080);
-      configuration.orientationMode = VideoOutputOrientationMode.Adaptative;
-      await _engine.setVideoEncoderConfiguration(configuration);
-      await _engine.joinChannel(token, widget.channelName!, null, 0);
-
+    await _initAgoraRtcEngine();
+    _addAgoraEventHandlers();
+    var configuration = VideoEncoderConfiguration();
+    configuration.dimensions = VideoDimensions(width: 1920, height: 1080);
+    configuration.orientationMode = VideoOutputOrientationMode.Adaptative;
+    await _engine.setVideoEncoderConfiguration(configuration);
+    await _engine.joinChannel(token, widget.channelName!, null, 0);
   }
 
   //Initialize Agora RTC Engine
@@ -74,6 +75,15 @@ class _CallPageState extends State<CallPage> {
     await _engine.enableAudio();
     await _engine.setChannelProfile(ChannelProfile.LiveBroadcasting);
     await _engine.setClientRole(widget.role!);
+  }
+
+  _removeDataFromFirebase() async {
+    await FirebaseDatabase.instance.ref("channels").remove();
+
+  }
+  Future<void> _leaveChannel() async {
+    await _removeDataFromFirebase();
+    Navigator.pop(context);
   }
 
   //Agora Events Handler To Implement Ui/UX Based On Your Requirements
@@ -171,94 +181,102 @@ class _CallPageState extends State<CallPage> {
       ),
     );
   }
+
   // Ui & UX For Bottom Portion (Switch Camera,Video On/Off,Mic On/Off)
   Widget _bottomPortionWidget() => Container(
-    margin: const EdgeInsets.symmetric(
-        horizontal: 40),
-    alignment: Alignment.bottomCenter,
-    child: Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: <Widget>[
-        RawMaterialButton(
-          onPressed: (){
-            _engine.switchCamera();
-          },
-          child: const Icon(
-           Icons.switch_camera,
-            color: Colors.blueAccent,
-            size: 20,
-          ),
-          shape: const CircleBorder(),
-          elevation: 2.0,
-          fillColor:
-         Colors.white,
-          padding: const EdgeInsets.all(12),
+        margin: const EdgeInsets.symmetric(horizontal: 40),
+        alignment: Alignment.bottomCenter,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: <Widget>[
+            RawMaterialButton(
+              onPressed: () {
+                _engine.switchCamera();
+              },
+              child: const Icon(
+                Icons.switch_camera,
+                color: Colors.blueAccent,
+                size: 20,
+              ),
+              shape: const CircleBorder(),
+              elevation: 2.0,
+              fillColor: Colors.white,
+              padding: const EdgeInsets.all(12),
+            ),
+            RawMaterialButton(
+              onPressed: () => _leaveChannel(),
+              child: const Icon(
+                Icons.call_end,
+                color: Colors.white,
+                size: 35,
+              ),
+              shape: const CircleBorder(),
+              elevation: 2.0,
+              fillColor: Colors.redAccent,
+              padding: const EdgeInsets.all(12),
+            ),
+            RawMaterialButton(
+              onPressed: () {
+                setState(() {
+                  _muted = !_muted;
+                });
+                _engine.muteLocalAudioStream(_muted);
+              },
+              child: Icon(
+                _muted ? Icons.mic_off : Icons.mic,
+                color: _muted ? Colors.white : Colors.blueAccent,
+                size: 20,
+              ),
+              shape: const CircleBorder(),
+              elevation: 2.0,
+              fillColor: _muted ? Colors.blueAccent : Colors.white,
+              padding: const EdgeInsets.all(12),
+            ),
+          ],
         ),
-        RawMaterialButton(
-          onPressed: ()=>Navigator.pop(context),
-          child: const Icon(Icons.call_end ,
-            color: Colors.white,
-            size: 35,
-          ),
-          shape:const CircleBorder(),
-          elevation: 2.0,
-          fillColor: Colors.redAccent,
-          padding: const EdgeInsets.all(12),
-        ),
-        RawMaterialButton(
-          onPressed: (){
-            setState(() {
-              _muted=!_muted;
-            });
-            _engine.muteLocalAudioStream(_muted);
-          },
-          child: Icon(
-            _muted ? Icons.mic_off : Icons.mic,
-            color: _muted?Colors.white:Colors.blueAccent,
-            size: 20,
-          ),
-          shape: const CircleBorder(),
-          elevation: 2.0,
-          fillColor: _muted
-              ? Colors.blueAccent
-              : Colors.white,
-          padding: const EdgeInsets.all(12),
-        ),
-      ],
-    ),
-  );
+      );
 
-  Widget _panel(){
+  Widget _panel() {
     return Visibility(
-        visible: _viewpanel,
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 48),
-          alignment: Alignment.bottomCenter,
-          child: FractionallySizedBox(
-            heightFactor: 0.5,
-            child: Container(
-              padding: const EdgeInsets.symmetric(vertical: 48),
-              child: ListView.builder(itemBuilder: (contex,int index ){
-                if(_infoStrings.isEmpty)return const Text("null");
-                return Padding(padding: const EdgeInsets.symmetric(vertical: 3,horizontal: 10),child: Row(
+      visible: _viewpanel,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 48),
+        alignment: Alignment.bottomCenter,
+        child: FractionallySizedBox(
+          heightFactor: 0.5,
+          child: Container(
+            padding: const EdgeInsets.symmetric(vertical: 48),
+            child: ListView.builder(itemBuilder: (contex, int index) {
+              if (_infoStrings.isEmpty) return const Text("null");
+              return Padding(
+                padding:
+                    const EdgeInsets.symmetric(vertical: 3, horizontal: 10),
+                child: Row(
                   mainAxisSize: MainAxisSize.max,
                   children: [
-                    Flexible(child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 2,horizontal: 5),
-                      decoration: const BoxDecoration(
-                        color: Colors.white,
+                    Flexible(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 2, horizontal: 5),
+                        decoration: const BoxDecoration(
+                          color: Colors.white,
+                        ),
+                        child: Text(
+                          _infoStrings[index],
+                          style: const TextStyle(
+                            color: Colors.blueGrey,
+                          ),
+                        ),
                       ),
-                      child: Text(_infoStrings[index],style: const TextStyle(
-                        color: Colors.blueGrey,
-                      ),),
-                    ),),
+                    ),
                   ],
-                ),);
-
-              }),
-            ),
+                ),
+              );
+            }),
           ),
-        ),);
+        ),
+      ),
+    );
   }
 
   @override
@@ -268,13 +286,16 @@ class _CallPageState extends State<CallPage> {
       appBar: AppBar(
         title: const Text("Agora"),
         centerTitle: true,
-      actions: [
-        IconButton(onPressed: (){
-          setState(() {
-            _viewpanel=!_viewpanel;
-          });
-        }, icon: const Icon(Icons.info_outline),),
-      ],
+        actions: [
+          IconButton(
+            onPressed: () {
+              setState(() {
+                _viewpanel = !_viewpanel;
+              });
+            },
+            icon: const Icon(Icons.info_outline),
+          ),
+        ],
       ),
       body: Center(
         child: Stack(

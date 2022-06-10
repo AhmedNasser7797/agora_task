@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:agora_rtc_engine/rtc_engine.dart';
 import 'package:agora_youtube/pages/call.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 
@@ -45,7 +46,7 @@ class _IndexPageState extends State<IndexPage> {
               height: 20,
             ),
             TextField(
-            controller: _channelController,
+              controller: _channelController,
               decoration: InputDecoration(
                   errorText:
                       _validateError ? "Channel Name is Mandatory" : null,
@@ -85,14 +86,15 @@ class _IndexPageState extends State<IndexPage> {
   }
 
   Future<void> _join() async {
-    setState(() {
-      _channelController.text.isEmpty
-          ? _validateError = true
-          : _validateError = false;
-    });
-    if (_channelController.text.isNotEmpty) {
+    if (_channelController.text.isEmpty) {
+      _validateError = true;
+      setState(() {});
+    } else {
+      _validateError = false;
+      setState(() {});
       await _hundleCameraAndMic(Permission.camera);
       await _hundleCameraAndMic(Permission.microphone);
+      await sendToFirebase();
       await Navigator.push(
           context,
           MaterialPageRoute(
@@ -101,6 +103,10 @@ class _IndexPageState extends State<IndexPage> {
                     role: _role,
                   )));
     }
+  }
+
+  Future<void> sendToFirebase() async {
+   await FirebaseDatabase.instance.ref("channels").set(_channelController.text);
   }
 
   Future<void> _hundleCameraAndMic(Permission permission) async {

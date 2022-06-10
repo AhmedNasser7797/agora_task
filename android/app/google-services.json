@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "26763847912",
+    "project_id": "agoretask",
+    "storage_bucket": "agoretask.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:26763847912:android:4f57316e27f1ce1bb0415d",
+        "android_client_info": {
+          "package_name": "com.example.agora_youtube"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "26763847912-np7ht7dalgikls5a43dt149lcn51j4fs.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCmFb6LLpUCDiITHxEXJyXsWdEVKKo0jbM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "26763847912-np7ht7dalgikls5a43dt149lcn51j4fs.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
