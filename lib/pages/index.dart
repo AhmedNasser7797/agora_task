@@ -31,7 +31,7 @@ class _IndexPageState extends State<IndexPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Agora"),
+        title: const Text("Login"),
         centerTitle: true,
       ),
       body: SingleChildScrollView(
