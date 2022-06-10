@@ -109,7 +109,7 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Future<void> sendToFirebase() async {
-   await FirebaseDatabase.instance.ref("channels").set(_channelController.text);
+   await FirebaseDatabase.instance.ref("channel").set(_channelController.text);
   }
 
   Future<void> _hundleCameraAndMic(Permission permission) async {

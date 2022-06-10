@@ -78,7 +78,7 @@ class _CallPageState extends State<CallPage> {
   }
 
   _removeDataFromFirebase() async {
-    await FirebaseDatabase.instance.ref("channels").remove();
+    await FirebaseDatabase.instance.ref("channel").remove();
 
   }
   Future<void> _leaveChannel() async {
