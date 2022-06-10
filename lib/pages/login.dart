@@ -4,19 +4,20 @@ import 'package:agora_rtc_engine/rtc_engine.dart';
 import 'package:agora_youtube/pages/call.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:permission_handler/permission_handler.dart';
 
-class IndexPage extends StatefulWidget {
-  const IndexPage({
+class LoginPage extends StatefulWidget {
+  const LoginPage({
     Key? key,
   }) : super(key: key);
 
   @override
-  State<IndexPage> createState() => _IndexPageState();
+  State<LoginPage> createState() => _LoginPageState();
 }
 
-class _IndexPageState extends State<IndexPage> {
-  final _channelController = TextEditingController(text: "1234");
+class _LoginPageState extends State<LoginPage> {
+  final _channelController = TextEditingController();
   bool _validateError = false;
   ClientRole? _role = ClientRole.Broadcaster;
 
@@ -47,6 +48,8 @@ class _IndexPageState extends State<IndexPage> {
             ),
             TextField(
               controller: _channelController,
+              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              maxLength: 4,
               decoration: InputDecoration(
                   errorText:
                       _validateError ? "Channel Name is Mandatory" : null,

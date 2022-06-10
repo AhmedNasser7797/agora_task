@@ -1,4 +1,4 @@
-import 'package:agora_youtube/pages/index.dart';
+import 'package:agora_youtube/pages/login.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 
@@ -20,7 +20,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.green,
       ),
-      home: const IndexPage(),
+      home: const LoginPage(),
     );
   }
 }
